@@ -1,17 +1,15 @@
-import * as os from "os";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { DiskInfo } from "../types";
+import * as os from 'os';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { DiskInfo } from '../types';
 
 const execAsync = promisify(exec);
 
-export async function getDiskInfo(path: string = "/"): Promise<DiskInfo> {
+export async function getDiskInfo(path: string = '/'): Promise<DiskInfo> {
   try {
-    if (os.platform() === "win32") {
-      const { stdout } = await execAsync(
-        "wmic logicaldisk get size,freespace,caption"
-      );
-      const lines = stdout.trim().split("\n").slice(1);
+    if (os.platform() === 'win32') {
+      const { stdout } = await execAsync('wmic logicaldisk get size,freespace,caption');
+      const lines = stdout.trim().split('\n').slice(1);
 
       for (const line of lines) {
         const parts = line.trim().split(/\s+/);
@@ -37,18 +35,18 @@ export async function getDiskInfo(path: string = "/"): Promise<DiskInfo> {
         }
       }
 
-      throw new Error("No valid disk information found");
+      throw new Error('No valid disk information found');
     } else {
       const { stdout } = await execAsync(`df -k "${path}"`);
-      const lines = stdout.trim().split("\n");
+      const lines = stdout.trim().split('\n');
 
       if (lines.length < 2) {
-        throw new Error("Unexpected df command output: insufficient lines");
+        throw new Error('Unexpected df command output: insufficient lines');
       }
 
       const line = lines[1];
       if (!line) {
-        throw new Error("No disk information line found in df output");
+        throw new Error('No disk information line found in df output');
       }
 
       const stats = line.trim().split(/\s+/);
@@ -57,7 +55,7 @@ export async function getDiskInfo(path: string = "/"): Promise<DiskInfo> {
       // Formato típico do df: Filesystem 1K-blocks Used Available Use% Mounted
       if (stats.length < 5) {
         throw new Error(
-          `Invalid df command output format: got ${stats.length} columns, expected at least 5`
+          `Invalid df command output format: got ${stats.length} columns, expected at least 5`,
         );
       }
 
@@ -67,7 +65,7 @@ export async function getDiskInfo(path: string = "/"): Promise<DiskInfo> {
       const usedPercentageStr = stats[4]; // Use%
 
       if (!totalStr || !usedStr || !availStr || !usedPercentageStr) {
-        throw new Error("Missing required values in df output");
+        throw new Error('Missing required values in df output');
       }
 
       const total = parseInt(totalStr, 10);
@@ -75,14 +73,9 @@ export async function getDiskInfo(path: string = "/"): Promise<DiskInfo> {
       const available = parseInt(availStr, 10);
       const usedPercentage = parseInt(usedPercentageStr, 10);
 
-      if (
-        isNaN(total) ||
-        isNaN(used) ||
-        isNaN(available) ||
-        isNaN(usedPercentage)
-      ) {
+      if (isNaN(total) || isNaN(used) || isNaN(available) || isNaN(usedPercentage)) {
         throw new Error(
-          `Invalid numeric values in df output: total=${totalStr}, used=${usedStr}, available=${availStr}, percentage=${usedPercentageStr}`
+          `Invalid numeric values in df output: total=${totalStr}, used=${usedStr}, available=${availStr}, percentage=${usedPercentageStr}`,
         );
       }
 
@@ -94,9 +87,9 @@ export async function getDiskInfo(path: string = "/"): Promise<DiskInfo> {
       };
     }
   } catch (error) {
-    console.error("Error getting disk info:", error);
+    console.error('Error getting disk info:', error);
     if (error instanceof Error) {
-      console.error("Error message:", error.message);
+      console.error('Error message:', error.message);
     }
     return {
       total: 0,
