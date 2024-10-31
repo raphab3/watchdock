@@ -19,10 +19,13 @@
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "is-ci || husky install",
-    "prepublishOnly": "pnpm test && pnpm lint && pnpm build",
-    "preversion": "pnpm lint",
-    "version": "pnpm format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags",
+    "docs": "typedoc --out docs src",
+    "clean": "rimraf dist node_modules package-lock.json",
+    "fresh-install": "npm run clean && npm install"
   },
   "dependencies": {
     "axios": "^1.6.0",
@@ -58,5 +61,18 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  }
+  },
+  "keywords": [
+    "monitoring",
+    "system-monitor",
+    "docker",
+    "notifications",
+    "discord",
+    "telegram",
+    "email",
+    "alerts",
+    "metrics",
+    "watchdog",
+    "system-metrics"
+  ]
 }
