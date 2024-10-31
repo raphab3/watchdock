@@ -1,0 +1,82 @@
+{
+  "name": "@raphab3/watchdock",
+  "version": "1.0.0",
+  "description": "Comprehensive system monitoring library with multiple notification providers (Discord, Telegram, Email)",
+  "author": "Rafael Batista Santos <raphab33@gmail.com>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "test": "jest --config jest.config.js",
+    "test:coverage": "jest --config jest.config.js --coverage",
+    "test:watch": "jest --config jest.config.js --watch",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepare": "husky install",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags",
+    "docs": "typedoc --out docs src"
+  },
+  "keywords": [
+    "monitoring",
+    "system-monitor",
+    "docker",
+    "notifications",
+    "discord",
+    "telegram",
+    "email",
+    "alerts",
+    "metrics",
+    "watchdog",
+    "system-metrics"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raphab3/watchdock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/raphab3/watchdock/issues"
+  },
+  "homepage": "https://github.com/raphab3/watchdock#readme",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.0",
+    "nodemailer": "^6.9.0"
+  },
+  "peerDependencies": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "@types/node-cron": "^3.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^9.0.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typedoc": "^0.25.0",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
