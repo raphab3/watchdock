@@ -1,5 +1,5 @@
-import { NotificationProvider, MetricsReport, EmailConfig } from "../types";
-import nodemailer from "nodemailer";
+import { NotificationProvider, MetricsReport, EmailConfig } from '../types';
+import nodemailer from 'nodemailer';
 
 export class EmailProvider implements NotificationProvider {
   private transporter: nodemailer.Transporter;
@@ -33,12 +33,10 @@ export class EmailProvider implements NotificationProvider {
       
       <h3>Application Metrics</h3>
       <ul>
-        <li>Active Connections: ${application.activeConnections || "N/A"}</li>
-        <li>Request Count: ${application.requestCount || "N/A"}</li>
-        <li>Error Count: ${application.errorCount || "N/A"}</li>
-        <li>Avg Response Time: ${
-          application.averageResponseTime || "N/A"
-        }ms</li>
+        <li>Active Connections: ${application.activeConnections || 'N/A'}</li>
+        <li>Request Count: ${application.requestCount || 'N/A'}</li>
+        <li>Error Count: ${application.errorCount || 'N/A'}</li>
+        <li>Avg Response Time: ${application.averageResponseTime || 'N/A'}ms</li>
       </ul>
       
       ${
@@ -46,10 +44,10 @@ export class EmailProvider implements NotificationProvider {
           ? `
         <h3>Errors</h3>
         <ul>
-          ${report.errors.map((error) => `<li>${error}</li>`).join("")}
+          ${report.errors.map((error) => `<li>${error}</li>`).join('')}
         </ul>
       `
-          : ""
+          : ''
       }
     `;
   }
@@ -58,7 +56,7 @@ export class EmailProvider implements NotificationProvider {
     try {
       await this.transporter.sendMail({
         from: this.config.from,
-        to: this.config.to.join(", "),
+        to: this.config.to.join(', '),
         subject: `System Health Report - ${report.status.toUpperCase()}`,
         html: this.formatHtmlMessage(report),
       });
@@ -66,7 +64,7 @@ export class EmailProvider implements NotificationProvider {
       if (error instanceof Error) {
         throw new Error(`Failed to send email notification: ${error.message}`);
       }
-      throw new Error("Failed to send email notification: Unknown error");
+      throw new Error('Failed to send email notification: Unknown error');
     }
   }
 }

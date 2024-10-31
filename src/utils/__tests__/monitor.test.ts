@@ -1,18 +1,18 @@
-import * as os from "os";
-import { SystemMonitor } from "../../monitor";
-import { MonitorConfig, MetricsReport } from "../../types";
-import { TelegramProvider } from "../../providers/telegram";
-import { EmailProvider } from "../../providers/email";
-import { getDiskInfo } from "../disk";
+import * as os from 'os';
+import { SystemMonitor } from '../../monitor';
+import { MonitorConfig, MetricsReport } from '../../types';
+import { TelegramProvider } from '../../providers/telegram';
+import { EmailProvider } from '../../providers/email';
+import { getDiskInfo } from '../disk';
 
 // Mocks
-jest.mock("os");
-jest.mock("node-cron");
-jest.mock("../disk");
-jest.mock("../../providers/telegram");
-jest.mock("../../providers/email");
+jest.mock('os');
+jest.mock('node-cron');
+jest.mock('../disk');
+jest.mock('../../providers/telegram');
+jest.mock('../../providers/email');
 
-describe("SystemMonitor", () => {
+describe('SystemMonitor', () => {
   const mockTelegramProvider = {
     send: jest.fn().mockResolvedValue(undefined),
   };
@@ -45,11 +45,9 @@ describe("SystemMonitor", () => {
       arrayBuffers: 10000000,
     };
 
-    jest.spyOn(process, "memoryUsage").mockReturnValue(mockMemoryUsage);
+    jest.spyOn(process, 'memoryUsage').mockReturnValue(mockMemoryUsage);
 
-    (TelegramProvider as jest.Mock).mockImplementation(
-      () => mockTelegramProvider
-    );
+    (TelegramProvider as jest.Mock).mockImplementation(() => mockTelegramProvider);
     (EmailProvider as jest.Mock).mockImplementation(() => mockEmailProvider);
   });
 
@@ -58,20 +56,20 @@ describe("SystemMonitor", () => {
     jest.useRealTimers();
   });
 
-  describe("Initialization", () => {
-    it("should initialize with correct providers", () => {
+  describe('Initialization', () => {
+    it('should initialize with correct providers', () => {
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
+        interval: '*/5 * * * *',
         providers: [
-          { type: "telegram", botToken: "token", chatId: "chat" },
+          { type: 'telegram', botToken: 'token', chatId: 'chat' },
           {
-            type: "email",
-            host: "smtp.test.com",
+            type: 'email',
+            host: 'smtp.test.com',
             port: 587,
             secure: true,
-            auth: { user: "test", pass: "pass" },
-            from: "from@test.com",
-            to: ["to@test.com"],
+            auth: { user: 'test', pass: 'pass' },
+            from: 'from@test.com',
+            to: ['to@test.com'],
           },
         ],
       };
@@ -80,26 +78,26 @@ describe("SystemMonitor", () => {
 
       expect(TelegramProvider).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: "telegram",
-          botToken: "token",
-          chatId: "chat",
-        })
+          type: 'telegram',
+          botToken: 'token',
+          chatId: 'chat',
+        }),
       );
       expect(EmailProvider).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: "email",
-          host: "smtp.test.com",
+          type: 'email',
+          host: 'smtp.test.com',
           port: 587,
-        })
+        }),
       );
     });
   });
 
-  describe("Notification Rules", () => {
-    it("should not send notification when metrics are below thresholds", async () => {
+  describe('Notification Rules', () => {
+    it('should not send notification when metrics are below thresholds', async () => {
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
-        providers: [{ type: "telegram", botToken: "token", chatId: "chat" }],
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
         notifications: {
           cpu: {
             value: 90,
@@ -117,15 +115,15 @@ describe("SystemMonitor", () => {
       };
 
       const monitor = new SystemMonitor(config);
-      await monitor["collectSystemMetrics"]();
+      await monitor['collectSystemMetrics']();
 
       expect(mockTelegramProvider.send).not.toHaveBeenCalled();
     });
 
-    it("should send notification when metrics exceed thresholds", async () => {
+    it('should send notification when metrics exceed thresholds', async () => {
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
-        providers: [{ type: "telegram", botToken: "token", chatId: "chat" }],
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
         notifications: {
           cpu: {
             value: 1, // CPU is mocked at 1.5
@@ -135,15 +133,15 @@ describe("SystemMonitor", () => {
       };
 
       const monitor = new SystemMonitor(config);
-      await monitor["collectSystemMetrics"]();
+      await monitor['collectSystemMetrics']();
 
       expect(mockTelegramProvider.send).toHaveBeenCalled();
     });
 
-    it("should respect notification duration", async () => {
+    it('should respect notification duration', async () => {
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
-        providers: [{ type: "telegram", botToken: "token", chatId: "chat" }],
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
         notifications: {
           cpu: {
             value: 1,
@@ -156,50 +154,49 @@ describe("SystemMonitor", () => {
       const monitor = new SystemMonitor(config);
 
       // First check
-      await monitor["collectSystemMetrics"]();
+      await monitor['collectSystemMetrics']();
       expect(mockTelegramProvider.send).toHaveBeenCalledTimes(1);
 
       // Second check immediately after
-      await monitor["collectSystemMetrics"]();
+      await monitor['collectSystemMetrics']();
       expect(mockTelegramProvider.send).toHaveBeenCalledTimes(1); // Shouldn't send again
 
       // Advance time by 6 minutes
       jest.advanceTimersByTime(6 * 60 * 1000);
 
       // Third check after duration
-      await monitor["collectSystemMetrics"]();
+      await monitor['collectSystemMetrics']();
       expect(mockTelegramProvider.send).toHaveBeenCalledTimes(2); // Should send again
     });
 
-    it("should handle custom notification rules", async () => {
+    it('should handle custom notification rules', async () => {
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
-        providers: [{ type: "telegram", botToken: "token", chatId: "chat" }],
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
         notifications: {
           custom: [
             {
-              condition: (metrics: MetricsReport) =>
-                metrics.system.cpu.usage > 1,
-              message: "Custom CPU alert",
+              condition: (metrics: MetricsReport) => metrics.system.cpu.usage > 1,
+              message: 'Custom CPU alert',
             },
           ],
         },
       };
 
       const monitor = new SystemMonitor(config);
-      await monitor["collectSystemMetrics"]();
+      await monitor['collectSystemMetrics']();
 
       const sentReport = mockTelegramProvider.send.mock.calls[0][0];
-      expect(sentReport.errors).toContain("Custom CPU alert");
+      expect(sentReport.errors).toContain('Custom CPU alert');
     });
 
-    it("should send notifications based on status", async () => {
+    it('should send notifications based on status', async () => {
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
-        providers: [{ type: "telegram", botToken: "token", chatId: "chat" }],
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
         notifications: {
           status: {
-            notifyOn: ["degraded", "unhealthy"],
+            notifyOn: ['degraded', 'unhealthy'],
           },
           cpu: {
             value: 1,
@@ -209,71 +206,69 @@ describe("SystemMonitor", () => {
       };
 
       const monitor = new SystemMonitor(config);
-      const report = await monitor["collectSystemMetrics"]();
+      const report = await monitor['collectSystemMetrics']();
 
-      expect(report.status).toBe("degraded");
+      expect(report.status).toBe('degraded');
       expect(mockTelegramProvider.send).toHaveBeenCalled();
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle async custom metrics failure gracefully", async () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-      const mockMetrics = jest
-        .fn()
-        .mockRejectedValue(new Error("Custom metrics error"));
+  describe('Error Handling', () => {
+    it('should handle async custom metrics failure gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const mockMetrics = jest.fn().mockRejectedValue(new Error('Custom metrics error'));
 
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
+        interval: '*/5 * * * *',
         providers: [],
         customMetrics: mockMetrics,
       };
 
       const monitor = new SystemMonitor(config);
-      const report = await monitor["collectSystemMetrics"]();
+      const report = await monitor['collectSystemMetrics']();
 
       expect(report).toBeDefined();
       expect(report.application).toEqual({});
       expect(mockMetrics).toHaveBeenCalled();
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to collect custom metrics:",
-        expect.any(Error)
+        'Failed to collect custom metrics:',
+        expect.any(Error),
       );
 
       consoleSpy.mockRestore();
     });
 
-    it("should handle sync custom metrics failure gracefully", async () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+    it('should handle sync custom metrics failure gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       const mockMetrics = jest.fn().mockImplementation(() => {
-        throw new Error("Sync custom metrics error");
+        throw new Error('Sync custom metrics error');
       });
 
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
+        interval: '*/5 * * * *',
         providers: [],
         customMetrics: mockMetrics,
       };
 
       const monitor = new SystemMonitor(config);
-      const report = await monitor["collectSystemMetrics"]();
+      const report = await monitor['collectSystemMetrics']();
 
       expect(report).toBeDefined();
       expect(report.application).toEqual({});
       expect(mockMetrics).toHaveBeenCalled();
       expect(consoleSpy).toHaveBeenCalledWith(
-        "Failed to collect custom metrics:",
-        expect.any(Error)
+        'Failed to collect custom metrics:',
+        expect.any(Error),
       );
 
       consoleSpy.mockRestore();
     });
   });
 
-  describe("Metrics Collection", () => {
-    it("should collect system metrics correctly", async () => {
+  describe('Metrics Collection', () => {
+    it('should collect system metrics correctly', async () => {
       const config: MonitorConfig = {
-        interval: "*/5 * * * *",
+        interval: '*/5 * * * *',
         providers: [],
         customMetrics: jest.fn().mockResolvedValue({
           activeConnections: 100,
@@ -282,10 +277,10 @@ describe("SystemMonitor", () => {
       };
 
       const monitor = new SystemMonitor(config);
-      const report = await monitor["collectSystemMetrics"]();
+      const report = await monitor['collectSystemMetrics']();
 
       expect(report).toMatchObject({
-        status: "healthy",
+        status: 'healthy',
         errors: expect.any(Array),
         system: {
           cpu: {

@@ -1,5 +1,5 @@
-import { NotificationProvider, MetricsReport, TelegramConfig } from "../types";
-import axios, { AxiosError } from "axios";
+import { NotificationProvider, MetricsReport, TelegramConfig } from '../types';
+import axios, { AxiosError } from 'axios';
 
 export class TelegramProvider implements NotificationProvider {
   private config: TelegramConfig;
@@ -23,20 +23,20 @@ Heap: ${(system.memory.heapUsed / 1024 / 1024).toFixed(2)} MB
 Disk: ${system.disk.usedPercentage}%
 
 📊 Application Metrics:
-Active Connections: ${application.activeConnections || "N/A"}
-Request Count: ${application.requestCount || "N/A"}
-Error Count: ${application.errorCount || "N/A"}
-Avg Response Time: ${application.averageResponseTime || "N/A"}ms
+Active Connections: ${application.activeConnections || 'N/A'}
+Request Count: ${application.requestCount || 'N/A'}
+Error Count: ${application.errorCount || 'N/A'}
+Avg Response Time: ${application.averageResponseTime || 'N/A'}ms
 
-${report.errors?.length ? `⚠️ Errors:\n${report.errors.join("\n")}` : ""}
+${report.errors?.length ? `⚠️ Errors:\n${report.errors.join('\n')}` : ''}
     `.trim();
   }
 
-  private getStatusEmoji(status: "healthy" | "degraded" | "unhealthy"): string {
+  private getStatusEmoji(status: 'healthy' | 'degraded' | 'unhealthy'): string {
     const emojis = {
-      healthy: "✅",
-      degraded: "⚠️",
-      unhealthy: "❌",
+      healthy: '✅',
+      degraded: '⚠️',
+      unhealthy: '❌',
     } as const;
 
     return `${emojis[status]} ${status.toUpperCase()}`;
@@ -50,15 +50,13 @@ ${report.errors?.length ? `⚠️ Errors:\n${report.errors.join("\n")}` : ""}
       await axios.post(url, {
         chat_id: this.config.chatId,
         text: message,
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
       });
     } catch (error) {
       if (error instanceof AxiosError) {
-        throw new Error(
-          `Failed to send Telegram notification: ${error.message}`
-        );
+        throw new Error(`Failed to send Telegram notification: ${error.message}`);
       }
-      throw new Error("Failed to send Telegram notification: Unknown error");
+      throw new Error('Failed to send Telegram notification: Unknown error');
     }
   }
 }

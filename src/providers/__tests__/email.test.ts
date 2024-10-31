@@ -1,10 +1,10 @@
-import nodemailer from "nodemailer";
-import { EmailConfig, MetricsReport } from "../../types";
-import { EmailProvider } from "../email";
+import nodemailer from 'nodemailer';
+import { EmailConfig, MetricsReport } from '../../types';
+import { EmailProvider } from '../email';
 
-jest.mock("nodemailer");
+jest.mock('nodemailer');
 
-describe("EmailProvider", () => {
+describe('EmailProvider', () => {
   const mockTransporter = {
     sendMail: jest.fn().mockResolvedValue(undefined),
   };
@@ -15,21 +15,21 @@ describe("EmailProvider", () => {
   });
 
   const mockConfig: EmailConfig = {
-    type: "email",
-    host: "smtp.test.com",
+    type: 'email',
+    host: 'smtp.test.com',
     port: 587,
     secure: true,
     auth: {
-      user: "test@test.com",
-      pass: "password",
+      user: 'test@test.com',
+      pass: 'password',
     },
-    from: "sender@test.com",
-    to: ["recipient1@test.com", "recipient2@test.com"],
+    from: 'sender@test.com',
+    to: ['recipient1@test.com', 'recipient2@test.com'],
   };
 
   const mockReport: MetricsReport = {
-    timestamp: "2024-01-01T00:00:00.000Z",
-    status: "healthy",
+    timestamp: '2024-01-01T00:00:00.000Z',
+    status: 'healthy',
     errors: [],
     system: {
       cpu: {
@@ -55,7 +55,7 @@ describe("EmailProvider", () => {
       process: {
         uptime: 3600,
         pid: 1234,
-        version: "v16.0.0",
+        version: 'v16.0.0',
       },
     },
     application: {
@@ -66,7 +66,7 @@ describe("EmailProvider", () => {
     },
   };
 
-  it("should initialize with correct configuration", () => {
+  it('should initialize with correct configuration', () => {
     new EmailProvider(mockConfig);
     expect(nodemailer.createTransport).toHaveBeenCalledWith({
       host: mockConfig.host,
@@ -76,40 +76,39 @@ describe("EmailProvider", () => {
     });
   });
 
-  it("should send email with correct format for healthy status", async () => {
+  it('should send email with correct format for healthy status', async () => {
     const provider = new EmailProvider(mockConfig);
     await provider.send(mockReport);
 
     const emailContent = mockTransporter.sendMail.mock.calls[0][0].html;
-    // Ajustando a verificação para corresponder ao formato real do HTML
-    expect(emailContent).toContain("<strong>Status:</strong> HEALTHY");
+    expect(emailContent).toContain('<strong>Status:</strong> HEALTHY');
     expect(emailContent).toMatch(/CPU: 25\.50%/);
     expect(emailContent).toMatch(/Active Connections: 100/);
-    expect(emailContent).not.toContain("<h3>Errors</h3>");
+    expect(emailContent).not.toContain('<h3>Errors</h3>');
   });
 
-  it("should include errors in email when present", async () => {
+  it('should include errors in email when present', async () => {
     const reportWithErrors = {
       ...mockReport,
-      status: "unhealthy" as const,
-      errors: ["CPU threshold exceeded", "Memory usage too high"],
+      status: 'unhealthy' as const,
+      errors: ['CPU threshold exceeded', 'Memory usage too high'],
     };
 
     const provider = new EmailProvider(mockConfig);
     await provider.send(reportWithErrors);
 
     const emailContent = mockTransporter.sendMail.mock.calls[0][0].html;
-    expect(emailContent).toContain("<strong>Status:</strong> UNHEALTHY");
-    expect(emailContent).toContain("CPU threshold exceeded");
-    expect(emailContent).toContain("Memory usage too high");
+    expect(emailContent).toContain('<strong>Status:</strong> UNHEALTHY');
+    expect(emailContent).toContain('CPU threshold exceeded');
+    expect(emailContent).toContain('Memory usage too high');
   });
 
-  it("should handle email sending errors", async () => {
-    mockTransporter.sendMail.mockRejectedValueOnce(new Error("SMTP error"));
+  it('should handle email sending errors', async () => {
+    mockTransporter.sendMail.mockRejectedValueOnce(new Error('SMTP error'));
     const provider = new EmailProvider(mockConfig);
 
     await expect(provider.send(mockReport)).rejects.toThrow(
-      "Failed to send email notification: SMTP error"
+      'Failed to send email notification: SMTP error',
     );
   });
 });
