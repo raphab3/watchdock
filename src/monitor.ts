@@ -1,16 +1,16 @@
-import * as os from "os";
-import { DiscordProvider } from "./providers/discord";
-import { EmailProvider } from "./providers/email";
-import { getDiskInfo } from "./utils/disk";
+import * as os from 'os';
+import { DiscordProvider } from './providers/discord';
+import { EmailProvider } from './providers/email';
+import { getDiskInfo } from './utils/disk';
 import {
   MetricsReport,
   MonitorConfig,
   NotificationProvider,
   NotificationRules,
   ThresholdConfig,
-} from "./types";
-import { schedule } from "node-cron";
-import { TelegramProvider } from "./providers/telegram";
+} from './types';
+import { schedule } from 'node-cron';
+import { TelegramProvider } from './providers/telegram';
 
 export class SystemMonitor {
   private config: MonitorConfig;
@@ -25,13 +25,13 @@ export class SystemMonitor {
   private setupProviders() {
     this.config.providers.forEach((providerConfig) => {
       switch (providerConfig.type) {
-        case "telegram":
+        case 'telegram':
           this.providers.push(new TelegramProvider(providerConfig));
           break;
-        case "email":
+        case 'email':
           this.providers.push(new EmailProvider(providerConfig));
           break;
-        case "discord":
+        case 'discord':
           this.providers.push(new DiscordProvider(providerConfig));
           break;
       }
@@ -42,19 +42,14 @@ export class SystemMonitor {
     const rules = this.config.notifications;
     if (!rules) return false;
 
-    const threshold = rules[
-      metric as keyof NotificationRules
-    ] as ThresholdConfig;
+    const threshold = rules[metric as keyof NotificationRules] as ThresholdConfig;
     if (!threshold || !threshold.notify) return false;
 
     const now = Date.now();
     const lastNotification = this.lastNotificationTime[metric] || 0;
     const durationMs = (threshold.duration || 0) * 60 * 1000;
 
-    if (
-      value > threshold.value &&
-      (!threshold.duration || now - lastNotification >= durationMs)
-    ) {
+    if (value > threshold.value && (!threshold.duration || now - lastNotification >= durationMs)) {
       this.lastNotificationTime[metric] = now;
       return true;
     }
@@ -73,10 +68,9 @@ export class SystemMonitor {
     if (this.config.customMetrics) {
       try {
         const metrics = this.config.customMetrics();
-        applicationMetrics =
-          metrics instanceof Promise ? await metrics : metrics;
+        applicationMetrics = metrics instanceof Promise ? await metrics : metrics;
       } catch (error) {
-        console.error("Failed to collect custom metrics:", error);
+        console.error('Failed to collect custom metrics:', error);
       }
     }
 
@@ -84,27 +78,27 @@ export class SystemMonitor {
     const memoryUsagePercent = ((totalMemory - freeMemory) / totalMemory) * 100;
 
     // Check thresholds and collect errors
-    if (this.shouldNotify("cpu", cpuUsage)) {
+    if (this.shouldNotify('cpu', cpuUsage)) {
       errors.push(
         `CPU usage (${cpuUsage.toFixed(1)}%) exceeds threshold of ${
           this.config.notifications?.cpu?.value
-        }%`
+        }%`,
       );
     }
 
-    if (this.shouldNotify("memory", memoryUsagePercent)) {
+    if (this.shouldNotify('memory', memoryUsagePercent)) {
       errors.push(
         `Memory usage (${memoryUsagePercent.toFixed(
-          1
-        )}%) exceeds threshold of ${this.config.notifications?.memory?.value}%`
+          1,
+        )}%) exceeds threshold of ${this.config.notifications?.memory?.value}%`,
       );
     }
 
-    if (this.shouldNotify("disk", disk.usedPercentage)) {
+    if (this.shouldNotify('disk', disk.usedPercentage)) {
       errors.push(
         `Disk usage (${disk.usedPercentage.toFixed(1)}%) exceeds threshold of ${
           this.config.notifications?.disk?.value
-        }%`
+        }%`,
       );
     }
 
@@ -112,12 +106,7 @@ export class SystemMonitor {
       for (const rule of this.config.notifications.custom) {
         const metrics: MetricsReport = {
           timestamp: new Date().toISOString(),
-          status:
-            errors.length === 0
-              ? "healthy"
-              : errors.length < 2
-              ? "degraded"
-              : "unhealthy",
+          status: errors.length === 0 ? 'healthy' : errors.length < 2 ? 'degraded' : 'unhealthy',
           errors: [],
           system: {
             cpu: {
@@ -150,12 +139,7 @@ export class SystemMonitor {
       }
     }
 
-    const status =
-      errors.length === 0
-        ? "healthy"
-        : errors.length < 2
-        ? "degraded"
-        : "unhealthy";
+    const status = errors.length === 0 ? 'healthy' : errors.length < 2 ? 'degraded' : 'unhealthy';
 
     const shouldNotifyStatus =
       this.config.notifications?.status?.notifyOn.includes(status) ?? false;
@@ -202,10 +186,8 @@ export class SystemMonitor {
       this.providers.map((provider) =>
         provider
           .send(report)
-          .catch((error) =>
-            console.error(`Failed to send notification: ${error.message}`)
-          )
-      )
+          .catch((error) => console.error(`Failed to send notification: ${error.message}`)),
+      ),
     );
   }
 
@@ -214,7 +196,7 @@ export class SystemMonitor {
       try {
         await this.collectSystemMetrics();
       } catch (error) {
-        console.error("Monitor error:", error);
+        console.error('Monitor error:', error);
       }
     });
   }

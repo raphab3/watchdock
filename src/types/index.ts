@@ -33,14 +33,14 @@ export interface ApplicationMetrics {
   requestCount?: number;
   errorCount?: number;
   averageResponseTime?: number;
-  [key: string]: any;
+  [key: string]: number | string | boolean | undefined;
 }
 
 export interface MetricsReport {
   timestamp: string;
   system: SystemMetrics;
   application: ApplicationMetrics;
-  status: "healthy" | "degraded" | "unhealthy";
+  status: 'healthy' | 'degraded' | 'unhealthy';
   errors: string[];
 }
 
@@ -49,13 +49,13 @@ export interface NotificationProvider {
 }
 
 export interface TelegramConfig {
-  type: "telegram";
+  type: 'telegram';
   botToken: string;
   chatId: string;
 }
 
 export interface EmailConfig {
-  type: "email";
+  type: 'email';
   host: string;
   port: number;
   secure: boolean;
@@ -68,7 +68,7 @@ export interface EmailConfig {
 }
 
 export interface DiscordConfig {
-  type: "discord";
+  type: 'discord';
   webhookUrl: string;
   username?: string;
   avatarUrl?: string;
@@ -85,7 +85,7 @@ export interface NotificationRules {
   memory?: ThresholdConfig;
   disk?: ThresholdConfig;
   status?: {
-    notifyOn: Array<"healthy" | "degraded" | "unhealthy">;
+    notifyOn: Array<'healthy' | 'degraded' | 'unhealthy'>;
   };
   custom?: {
     condition: (metrics: MetricsReport) => boolean;
