@@ -262,7 +262,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Rafael Batista Santos**
 
 * Github: [@raphab3](https://github.com/raphab3)
-* LinkedIn: [@rafael-batista-santos](https://linkedin.com/in/rafael-batista-santos)
+* LinkedIn: [@rafael-batista-santos](https://linkedin.com/in/rafael-batista-79b106bb/)
 
 ## 🤝 Support
 
