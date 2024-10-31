@@ -18,62 +18,40 @@
     "test:watch": "jest --config jest.config.js --watch",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prepare": "husky install && pnpm build",
-    "prepublishOnly": "pnpm test && pnpm lint",
+    "prepare": "is-ci || husky install",
+    "prepublishOnly": "pnpm test && pnpm lint && pnpm build",
     "preversion": "pnpm lint",
     "version": "pnpm format && git add -A src",
     "postversion": "git push && git push --tags",
-    "docs": "typedoc --out docs src",
-    "clean": "rimraf dist node_modules pnpm-lock.yaml",
-    "fresh-install": "pnpm clean && pnpm install"
+    "docs": "typedoc --out docs src"
   },
-  "keywords": [
-    "monitoring",
-    "system-monitor",
-    "docker",
-    "notifications",
-    "discord",
-    "telegram",
-    "email",
-    "alerts",
-    "metrics",
-    "watchdog",
-    "system-metrics"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/raphab3/watchdock.git"
-  },
-  "bugs": {
-    "url": "https://github.com/raphab3/watchdock/issues"
-  },
-  "homepage": "https://github.com/raphab3/watchdock#readme",
   "dependencies": {
-    "axios": "^1.7.7",
-    "node-cron": "^3.0.3",
-    "nodemailer": "^6.9.16"
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.0",
+    "nodemailer": "^6.9.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "@types/node-cron": "^3.0.0",
+    "@types/nodemailer": "^6.4.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^9.0.0",
+    "is-ci": "^3.0.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.0",
+    "rimraf": "^5.0.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typedoc": "^0.25.0",
+    "typescript": "^5.3.3"
   },
   "peerDependencies": {
     "node": ">=14.0.0"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20.17.5",
-    "@types/node-cron": "^3.0.11",
-    "@types/nodemailer": "^6.4.16",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.1",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "husky": "^9.1.6",
-    "jest": "^29.7.0",
-    "prettier": "^3.3.3",
-    "rimraf": "^5.0.10",
-    "ts-jest": "^29.2.5",
-    "ts-node": "^10.9.2",
-    "typedoc": "^0.25.13",
-    "typescript": "^5.6.3"
   },
   "engines": {
     "node": ">=14.0.0"
