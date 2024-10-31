@@ -17,17 +17,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run tests
-        run: pnpm test
+        run: npm test
 
   publish-npm:
     needs: build
@@ -40,19 +36,26 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build
-        run: pnpm build
+        run: npm run build
 
+      - name: Auto-increment version
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          npm version patch -m "Auto-increment version to %s [skip ci]"
+        
       - name: Publish to NPM
-        run: pnpm publish --no-git-checks --access public
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN_WATCHDOCK}}
+
+      - name: Push version changes
+        run: git push && git push --tags
+        env:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
