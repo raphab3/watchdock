@@ -40,6 +40,32 @@ jobs:
 
       - name: Run lint
         run: npm run lint
+      
+      - name: Debug Token
+        run: |
+          echo "Token exists: ${{ secrets.NPM_TOKEN_WATCHDOCK != '' }}"
+          echo "First few characters of token: ${NPM_TOKEN_WATCHDOCK:0:4}***"
+        env:
+          NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
+
+      - name: Create .npmrc
+        run: |
+          echo "Creating .npmrc file..."
+          cat > .npmrc << EOF
+          registry=https://registry.npmjs.org/
+          //registry.npmjs.org/:_authToken=${NPM_TOKEN_WATCHDOCK}
+          save-exact=true
+          package-lock=true
+          access=public
+          engine-strict=true
+          node-version=20.17.0
+          EOF
+          echo "Checking if .npmrc was created:"
+          ls -la .npmrc
+          echo "Content of .npmrc (with token hidden):"
+          cat .npmrc | sed 's/_authToken=.*/_authToken=***/'
+        env:
+          NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
   publish-npm:
     needs: build
