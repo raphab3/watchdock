@@ -40,13 +40,6 @@ jobs:
 
       - name: Run lint
         run: npm run lint
-      
-      - name: Debug Token
-        run: |
-          echo "Token exists: ${{ secrets.NPM_TOKEN_WATCHDOCK != '' }}"
-          echo "First few characters of token: ${NPM_TOKEN_WATCHDOCK:0:4}***"
-        env:
-          NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Create .npmrc
         run: |
@@ -81,6 +74,13 @@ jobs:
         with:
           node-version: '20.17.0'
           registry-url: 'https://registry.npmjs.org/'
+
+      - name: Debug Token
+        run: |
+          echo "Token exists: ${{ secrets.NPM_TOKEN_WATCHDOCK != '' }}"
+          echo "First few characters of token: ${NPM_TOKEN_WATCHDOCK:0:4}***"
+        env:
+          NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Create .npmrc
         run: |
