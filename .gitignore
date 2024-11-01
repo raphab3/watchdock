@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# NPM config
+.npmrc# NPM config
+.npmrc
+
 # Build outputs
 dist/
 build/
