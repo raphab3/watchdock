@@ -50,12 +50,19 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.DEPLOY_TOKEN }}
 
-      - name: Setup Node.js and NPM Registry
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: 'https://registry.npmjs.org/'
-          always-auth: true
+
+      - name: Setup NPM Authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN_WATCHDOCK }}" >> .npmrc
+          npm config set access public
+          npm config list
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Git configuration
         run: |
@@ -66,24 +73,28 @@ jobs:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm config list
+          npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Build
         run: npm run build
 
-      - name: Auto-increment version and publish
+      - name: Version and Publish
         run: |
+          echo "NODE_AUTH_TOKEN exists: ${{ secrets.NPM_TOKEN_WATCHDOCK != '' }}"
           git pull origin main
           npm version patch -m "🚀 Release %s [skip ci]"
           git push origin HEAD:main --follow-tags
-          echo "Publishing version $(node -p "require('./package.json').version")"
-          npm config set //registry.npmjs.org/:_authToken ${NODE_AUTH_TOKEN}
-          npm publish --access public
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
           GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
       - name: Print completion message
+        if: success()
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "✅ Successfully published version $VERSION to npm"
