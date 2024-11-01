@@ -1,9 +1,9 @@
 # Watchdock 🔍
 
-[![npm version](https://img.shields.io/npm/v/@raphab3/watchdock.svg)](https://www.npmjs.com/package/@raphab3/watchdock)
+[![npm version](https://img.shields.io/npm/v/watchdock.svg)](https://www.npmjs.com/package/watchdock)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![Downloads](https://img.shields.io/npm/dt/@raphab3/watchdock.svg)](https://www.npmjs.com/package/@raphab3/watchdock)
+[![Downloads](https://img.shields.io/npm/dt/watchdock.svg)](https://www.npmjs.com/package/watchdock)
 
 A powerful and flexible system monitoring library for Node.js applications with built-in support for multiple notification providers.
 
@@ -14,18 +14,15 @@ A powerful and flexible system monitoring library for Node.js applications with 
   - Memory utilization
   - Disk space
   - Process information
-  
 - 🚨 **Multiple Notification Providers**
   - Discord webhooks
   - Telegram bots
   - Email notifications
-  
 - ⚙️ **Advanced Configuration**
   - Customizable monitoring intervals
   - Flexible threshold settings
   - Duration-based alerts
   - Custom metrics support
-  
 - 🛡️ **Reliability**
   - Error handling
   - Retry mechanisms
@@ -35,51 +32,57 @@ A powerful and flexible system monitoring library for Node.js applications with 
 
 ```bash
 # Using npm
-npm install @raphab3/watchdock
+npm install watchdock
 
 # Using yarn
-yarn add @raphab3/watchdock
+yarn add watchdock
 
 # Using pnpm
-pnpm add @raphab3/watchdock
+pnpm add watchdock
 ```
 
 ## 🚀 Quick Start
 
 ```typescript
-import { SystemMonitor } from '@raphab3/watchdock';
+import { SystemMonitor } from 'watchdock';
 
 const monitor = new SystemMonitor({
-  interval: "*/5 * * * *", // Check every 5 minutes
+  interval: '*/5 * * * *', // Check every 5 minutes
+  application: {
+    name: 'HAMORA API',
+    metadata: {
+      version: '1.0.0',
+    },
+  },
   providers: [
     {
-      type: "discord",
-      webhookUrl: "your-discord-webhook-url"
+      type: 'discord',
+      webhookUrl: 'your-discord-webhook-url',
     },
     {
-      type: "telegram",
-      botToken: "your-telegram-bot-token",
-      chatId: "your-chat-id"
-    }
+      type: 'telegram',
+      botToken: 'your-telegram-bot-token',
+      chatId: 'your-chat-id',
+    },
   ],
   notifications: {
     cpu: {
       value: 80, // Notify when CPU > 80%
       duration: 5, // Must exceed for 5 minutes
-      notify: true
+      notify: true,
     },
     memory: {
       value: 90, // Notify when memory > 90%
-      notify: true
+      notify: true,
     },
     disk: {
       value: 95, // Notify when disk > 95%
-      notify: true
+      notify: true,
     },
     status: {
-      notifyOn: ["unhealthy", "degraded"] // Notify on these states
-    }
-  }
+      notifyOn: ['unhealthy', 'degraded'], // Notify on these states
+    },
+  },
 });
 
 monitor.start();
@@ -93,16 +96,16 @@ monitor.start();
 interface MonitorConfig {
   // Cron expression for monitoring interval
   interval: string;
-  
+
   // Array of notification providers
   providers: NotificationConfig[];
-  
+
   // Optional environment name
   env?: string;
-  
+
   // Optional custom metrics collector
   customMetrics?: () => Promise<ApplicationMetrics>;
-  
+
   // Notification rules
   notifications?: NotificationRules;
 }
@@ -111,6 +114,7 @@ interface MonitorConfig {
 ### Notification Providers
 
 #### Discord
+
 ```typescript
 {
   type: "discord",
@@ -121,6 +125,7 @@ interface MonitorConfig {
 ```
 
 #### Telegram
+
 ```typescript
 {
   type: "telegram",
@@ -130,6 +135,7 @@ interface MonitorConfig {
 ```
 
 #### Email
+
 ```typescript
 {
   type: "email",
@@ -156,8 +162,8 @@ const monitor = new SystemMonitor({
     activeConnections: await getActiveConnections(),
     requestCount: await getRequestCount(),
     errorRate: await calculateErrorRate(),
-    responseTime: await getAverageResponseTime()
-  })
+    responseTime: await getAverageResponseTime(),
+  }),
 });
 ```
 
@@ -168,7 +174,7 @@ The monitoring system collects and reports the following metrics:
 ```typescript
 interface MetricsReport {
   timestamp: string;
-  status: "healthy" | "degraded" | "unhealthy";
+  status: 'healthy' | 'degraded' | 'unhealthy';
   errors: string[];
   system: {
     cpu: {
@@ -204,32 +210,14 @@ interface MetricsReport {
 ## 🔔 Notification Examples
 
 ### Discord Notification
-![Discord Notification Example](![image](https://github.com/user-attachments/assets/c5dbf505-dbcf-43de-9027-10239edeb843))
+
+![Discord Notification Example](./assets/Discord.png)
 
 ### Telegram Notification
-![Telegram Notification Example](![image](https://github.com/user-attachments/assets/42f33803-1b07-40eb-9893-c1f802fbfee8))
+
+![Telegram Notification Example](./assets/Telegram.png)
 
 ## 🛠️ Advanced Usage
-
-### Custom Notification Rules
-
-```typescript
-const monitor = new SystemMonitor({
-  // ... other config
-  notifications: {
-    custom: [
-      {
-        condition: (metrics) => metrics.application.errorRate > 5,
-        message: "Error rate exceeded 5%"
-      },
-      {
-        condition: (metrics) => metrics.application.responseTime > 1000,
-        message: "Average response time exceeded 1 second"
-      }
-    ]
-  }
-});
-```
 
 ### Duration-Based Alerts
 
@@ -261,8 +249,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Rafael Batista Santos**
 
-* Github: [@raphab3](https://github.com/raphab3)
-* LinkedIn: [@rafael-batista-santos](https://linkedin.com/in/rafael-batista-79b106bb/)
+- Github: [@raphab3](https://github.com/raphab3)
+- LinkedIn: [@rafael-batista-santos](https://linkedin.com/in/rafael-batista-79b106bb/)
 
 ## 🤝 Support
 
