@@ -30,37 +30,11 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          git remote set-url origin https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ github.repository }}.git
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
-      - name: Debug Token
-        run: |
-          echo "Token exists: ${{ secrets.NPM_TOKEN_WATCHDOCK != '' }}"
-        env:
-          NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
-
-      - name: Create .npmrc
-        run: |
-          cat > .npmrc << EOF
-          registry=https://registry.npmjs.org/
-          //registry.npmjs.org/:_authToken=${NPM_TOKEN_WATCHDOCK}
-          save-exact=true
-          package-lock=true
-          access=public
-          engine-strict=true
-          node-version=20.17.0
-          EOF
-          chmod 0600 .npmrc
-          git add .npmrc
-          git commit -m "chore: update .npmrc [skip ci]" || echo "No changes to commit"
-        env:
-          NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Install dependencies
         run: npm ci
         env:
-          NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Run tests
         run: npm test
@@ -71,35 +45,26 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Version and Publish
+      - name: Version and Push
         run: |
-          echo "Checking NPM token..."
-          if [ -z "$NPM_TOKEN_WATCHDOCK" ]; then
-            echo "NPM_TOKEN_WATCHDOCK is not set"
-            exit 1
-          fi
-
-          echo "Pulling latest changes..."
           git pull origin main
+          npm version patch -m "🚀 Release %s"
+          git push origin main --follow-tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
-          echo "Creating new version..."
-          npm --no-git-tag-version version patch
-          
-          VERSION=$(node -p "require('./package.json').version")
-          
-          echo "Committing changes..."
-          git add package.json package-lock.json
-          git commit -m "🚀 Release ${VERSION} [skip ci]"
-          
-          echo "Pushing changes..."
-          git tag v${VERSION}
-          git push origin HEAD:main --follow-tags
-
-          echo "Publishing to NPM..."
-          npm publish
+      - name: Setup NPM Authentication
+        run: |
+          # Configurar autenticação NPM temporariamente
+          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN_WATCHDOCK}
         env:
           NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+      - name: Publish to NPM
+        run: |
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Print completion message
         if: success()
