@@ -6,11 +6,6 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest --config jest.config.js",
@@ -51,6 +46,18 @@
     "ts-node": "^10.9.2",
     "typedoc": "^0.25.0",
     "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
   "peerDependencies": {
     "node": ">=14.0.0"
