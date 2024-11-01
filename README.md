@@ -204,10 +204,10 @@ interface MetricsReport {
 ## 🔔 Notification Examples
 
 ### Discord Notification
-![Discord Notification Example](https://via.placeholder.com/600x200?text=Discord+Notification+Example)
+![Discord Notification Example](![image](https://github.com/user-attachments/assets/c5dbf505-dbcf-43de-9027-10239edeb843))
 
 ### Telegram Notification
-![Telegram Notification Example](https://via.placeholder.com/600x200?text=Telegram+Notification+Example)
+![Telegram Notification Example](![image](https://github.com/user-attachments/assets/42f33803-1b07-40eb-9893-c1f802fbfee8))
 
 ## 🛠️ Advanced Usage
 
