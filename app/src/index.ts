@@ -13,7 +13,7 @@ const DISCORD_WEBHOOK_URL_V2 = '';
 const monitor = new SystemMonitor({
   interval: '*/1 * * * *',
   application: {
-    name: 'HAMORA API',
+    name: 'My App',
     metadata: {
       version: '1.0.0',
     },
