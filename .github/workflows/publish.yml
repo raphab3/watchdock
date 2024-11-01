@@ -50,11 +50,12 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.DEPLOY_TOKEN }}
 
-      - name: Setup Node.js
+      - name: Setup Node.js and NPM Registry
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://registry.npmjs.org/'
+          always-auth: true
 
       - name: Git configuration
         run: |
@@ -63,14 +64,6 @@ jobs:
           git remote set-url origin https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ github.repository }}.git
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
-      - name: Verify NPM Authentication
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN_WATCHDOCK }}" > ~/.npmrc
-          npm whoami
-          echo "Authenticated as $(npm whoami)"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Install dependencies
         run: npm ci
@@ -84,6 +77,7 @@ jobs:
           npm version patch -m "🚀 Release %s [skip ci]"
           git push origin HEAD:main --follow-tags
           echo "Publishing version $(node -p "require('./package.json').version")"
+          npm config set //registry.npmjs.org/:_authToken ${NODE_AUTH_TOKEN}
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
