@@ -45,7 +45,7 @@ export interface MetricsReport {
 }
 
 export interface NotificationProvider {
-  send(report: MetricsReport): Promise<void>;
+  send(report: MetricsReport, app?: ApplicationConfig): Promise<void>;
 }
 
 export interface TelegramConfig {

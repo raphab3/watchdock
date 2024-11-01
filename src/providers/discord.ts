@@ -33,7 +33,7 @@ export class DiscordProvider implements NotificationProvider {
 
   private formatMessage(
     report: MetricsReport,
-    application?: ApplicationConfig,
+    appConfig?: ApplicationConfig,
   ): {
     username: string;
     avatar_url?: string;
@@ -47,7 +47,7 @@ export class DiscordProvider implements NotificationProvider {
     }>;
   } {
     const { system, application: metrics, status, timestamp, errors } = report;
-    const appName = application?.name || 'Watchdock';
+    const appName = appConfig?.name || 'Watchdock';
 
     const fields = [
       {

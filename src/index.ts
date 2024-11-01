@@ -3,6 +3,7 @@ import { DiscordProvider } from './providers/discord';
 import { EmailProvider } from './providers/email';
 import { getDiskInfo } from './utils/disk';
 import {
+  ApplicationConfig,
   MetricsReport,
   MonitorConfig,
   NotificationProvider,
@@ -172,18 +173,22 @@ export class SystemMonitor {
       application: applicationMetrics,
     };
 
+    const app = this.config.application;
+
     if (errors.length > 0 || shouldNotifyStatus) {
-      await this.sendNotifications(report);
+      await this.sendNotifications(report, app);
     }
 
     return report;
   }
 
-  private async sendNotifications(report: MetricsReport) {
+  private async sendNotifications(report: MetricsReport, app?: ApplicationConfig) {
+    const appConfig = app || this.config.application;
+
     await Promise.all(
       this.providers.map((provider) =>
         provider
-          .send(report)
+          .send(report, appConfig)
           .catch((error) => console.error(`Failed to send notification: ${error.message}`)),
       ),
     );
