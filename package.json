@@ -8,12 +8,12 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/[seu-usuario]/watchdock.git"
+    "url": "git+https://github.com/raphab3/watchdock.git"
   },
   "bugs": {
-    "url": "https://github.com/[seu-usuario]/watchdock/issues"
+    "url": "https://github.com/raphab3/watchdock/issues"
   },
-  "homepage": "https://github.com/[seu-usuario]/watchdock#readme",
+  "homepage": "https://github.com/raphab3/watchdock#readme",
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest --config jest.config.js",
@@ -23,9 +23,9 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "is-ci || husky install",
     "prepublishOnly": "npm test && npm run lint",
-    "preversion": "npm run lint",
-    "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags",
+    "preversion": "npm run lint && npm run build",
+    "version": "npm run format && git add -A",
+    "postversion": "echo 'Version updated'",
     "docs": "typedoc --out docs src",
     "clean": "rimraf dist node_modules package-lock.json",
     "fresh-install": "npm run clean && npm install"

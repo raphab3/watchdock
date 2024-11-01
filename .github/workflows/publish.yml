@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -20,13 +23,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package.json'
 
-      - name: Clean install dependencies
+      - name: Git configuration
         run: |
-          npm install
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add package-lock.json
-          git commit -m "Add package-lock.json [skip ci]" || echo "No changes to commit"
+
+      - name: Clean install dependencies
+        run: npm ci
 
       - name: Run tests
         run: npm test
@@ -39,6 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -48,25 +54,31 @@ jobs:
           cache: 'npm'
           cache-dependency-path: '**/package.json'
 
+      - name: Git configuration
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
 
       - name: Auto-increment version
         run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          npm version patch -m "Auto-increment version to %s [skip ci]"
+          git pull origin main
+          npm version patch -m "🚀 Release %s [skip ci]"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
+
+      - name: Push changes
+        run: |
+          git push origin HEAD:main --follow-tags
+        env:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to NPM
         run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN_WATCHDOCK}}
-
-      - name: Push version changes
-        run: |
-          git push origin HEAD:main --follow-tags --force
-        env:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
