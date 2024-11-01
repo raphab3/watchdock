@@ -1,0 +1,6 @@
+registry=https://registry.npmjs.org/
+save-exact=true
+package-lock=true
+access=public
+engine-strict=true
+node-version=20.17.0

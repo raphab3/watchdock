@@ -6,6 +6,14 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/[seu-usuario]/watchdock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/[seu-usuario]/watchdock/issues"
+  },
+  "homepage": "https://github.com/[seu-usuario]/watchdock#readme",
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest --config jest.config.js",
@@ -60,10 +68,10 @@
     }
   },
   "peerDependencies": {
-    "node": ">=14.0.0"
+    "node": ">=20.17.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=20.17.0"
   },
   "publishConfig": {
     "access": "public",

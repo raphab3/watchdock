@@ -204,3 +204,7 @@ export class SystemMonitor {
     });
   }
 }
+
+class Watchdock extends SystemMonitor {}
+
+export default Watchdock;
