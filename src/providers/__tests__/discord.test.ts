@@ -67,11 +67,36 @@ describe('DiscordProvider', () => {
         username: mockConfig.username,
         avatar_url: mockConfig.avatarUrl,
         embeds: [
-          expect.objectContaining({
-            title: '🔍 System Health Report',
+          {
+            title: expect.stringContaining('System Health Report'),
             color: 0x00ff00, // Green color for healthy
             description: '**Status:** HEALTHY',
-          }),
+            fields: expect.arrayContaining([
+              expect.objectContaining({
+                name: '💻 CPU',
+                value: expect.stringContaining('Usage: 25.50%'),
+                inline: true,
+              }),
+              expect.objectContaining({
+                name: '🧠 Memory',
+                value: expect.stringContaining('Used:'),
+                inline: true,
+              }),
+              expect.objectContaining({
+                name: '💾 Disk',
+                value: expect.stringContaining('Used: 50%'),
+                inline: true,
+              }),
+              expect.objectContaining({
+                name: '📊 Application Metrics',
+                value: expect.stringContaining('Active Connections: 100'),
+              }),
+            ]),
+            footer: expect.objectContaining({
+              text: expect.stringContaining('Process ID: 1234'),
+            }),
+            timestamp: mockReport.timestamp,
+          },
         ],
       });
     });

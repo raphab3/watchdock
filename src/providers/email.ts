@@ -1,4 +1,4 @@
-import { NotificationProvider, MetricsReport, EmailConfig } from '../types';
+import { NotificationProvider, MetricsReport, EmailConfig, ApplicationConfig } from '../types';
 import nodemailer from 'nodemailer';
 
 export class EmailProvider implements NotificationProvider {
@@ -15,11 +15,12 @@ export class EmailProvider implements NotificationProvider {
     });
   }
 
-  private formatHtmlMessage(report: MetricsReport): string {
+  private formatHtmlMessage(report: MetricsReport, app?: ApplicationConfig): string {
     const { system, application, status, timestamp } = report;
+    const appName = app?.name || 'Watchdock';
 
     return `
-      <h2>System Health Report</h2>
+      <h2>System Health Report: ${appName}</h2>
       <p><strong>Time:</strong> ${new Date(timestamp).toLocaleString()}</p>
       <p><strong>Status:</strong> ${status.toUpperCase()}</p>
       

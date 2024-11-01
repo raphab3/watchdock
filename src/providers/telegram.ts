@@ -1,4 +1,4 @@
-import { NotificationProvider, MetricsReport, TelegramConfig } from '../types';
+import { NotificationProvider, MetricsReport, TelegramConfig, ApplicationConfig } from '../types';
 import axios, { AxiosError } from 'axios';
 
 export class TelegramProvider implements NotificationProvider {
@@ -8,11 +8,12 @@ export class TelegramProvider implements NotificationProvider {
     this.config = config;
   }
 
-  private formatMessage(report: MetricsReport): string {
+  private formatMessage(report: MetricsReport, app?: ApplicationConfig): string {
     const { system, application, status, timestamp } = report;
+    const appName = app?.name || 'Watchdock';
 
     return `
-🔍 System Health Report
+🔍 System Health Report: ${appName}
 📅 ${new Date(timestamp).toLocaleString()}
 Status: ${this.getStatusEmoji(status)}
 

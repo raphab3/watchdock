@@ -93,21 +93,18 @@ export interface NotificationRules {
   }[];
 }
 
-export interface HealthCheckConfig {
-  enabled: boolean;
-  interval?: string;
-  endpoints?: string[];
-  timeout?: number;
-  acceptableCodes?: number[];
-}
-
 export type NotificationConfig = TelegramConfig | EmailConfig | DiscordConfig;
+
+export interface ApplicationConfig {
+  name: string;
+  version?: string;
+  metadata?: Record<string, string | number | boolean>;
+}
 
 export interface MonitorConfig {
   interval: string;
   providers: NotificationConfig[];
-  env?: string;
   customMetrics?: () => Promise<ApplicationMetrics>;
   notifications?: NotificationRules;
-  healthCheck?: HealthCheckConfig;
+  application?: ApplicationConfig;
 }

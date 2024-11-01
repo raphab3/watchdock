@@ -1,7 +1,7 @@
-import { getDiskInfo } from '../utils/disk';
 import * as os from 'os';
 import { exec } from 'child_process';
 import type { ExecException } from 'child_process';
+import { getDiskInfo } from '../disk';
 
 jest.mock('os');
 jest.mock('child_process');

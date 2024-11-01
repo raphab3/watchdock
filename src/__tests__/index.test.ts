@@ -1,16 +1,27 @@
 import * as os from 'os';
-import { SystemMonitor } from '../../monitor';
-import { MonitorConfig, MetricsReport } from '../../types';
-import { TelegramProvider } from '../../providers/telegram';
-import { EmailProvider } from '../../providers/email';
-import { getDiskInfo } from '../disk';
+import { EmailProvider } from '../providers/email';
+import { TelegramProvider } from '../providers/telegram';
+import { MonitorConfig, MetricsReport } from '../types';
+import { getDiskInfo } from '../utils/disk';
+import { SystemMonitor } from '..';
+import { DiscordProvider } from '../providers/discord';
 
 // Mocks
 jest.mock('os');
 jest.mock('node-cron');
-jest.mock('../disk');
-jest.mock('../../providers/telegram');
-jest.mock('../../providers/email');
+jest.mock('../utils/disk');
+jest.mock('../providers/telegram');
+jest.mock('../providers/email');
+jest.mock('../providers/discord');
+
+jest.mock('node-cron', () => ({
+  schedule: jest.fn(() => ({
+    start: jest.fn(),
+    stop: jest.fn(),
+  })),
+}));
+
+const { schedule } = jest.requireMock('node-cron');
 
 describe('SystemMonitor', () => {
   const mockTelegramProvider = {
@@ -18,6 +29,10 @@ describe('SystemMonitor', () => {
   };
 
   const mockEmailProvider = {
+    send: jest.fn().mockResolvedValue(undefined),
+  };
+
+  const mockDiscordProvider = {
     send: jest.fn().mockResolvedValue(undefined),
   };
 
@@ -49,6 +64,7 @@ describe('SystemMonitor', () => {
 
     (TelegramProvider as jest.Mock).mockImplementation(() => mockTelegramProvider);
     (EmailProvider as jest.Mock).mockImplementation(() => mockEmailProvider);
+    (DiscordProvider as jest.Mock).mockImplementation(() => mockDiscordProvider);
   });
 
   afterEach(() => {
@@ -60,6 +76,13 @@ describe('SystemMonitor', () => {
     it('should initialize with correct providers', () => {
       const config: MonitorConfig = {
         interval: '*/5 * * * *',
+        application: {
+          name: 'Test App',
+          metadata: {
+            version: '1.0.0',
+            environment: 'production',
+          },
+        },
         providers: [
           { type: 'telegram', botToken: 'token', chatId: 'chat' },
           {
@@ -70,6 +93,12 @@ describe('SystemMonitor', () => {
             auth: { user: 'test', pass: 'pass' },
             from: 'from@test.com',
             to: ['to@test.com'],
+          },
+          {
+            type: 'discord',
+            webhookUrl: 'https://discord.webhook.url',
+            username: 'Test Bot',
+            avatarUrl: 'https://test.avatar.url',
           },
         ],
       };
@@ -88,6 +117,14 @@ describe('SystemMonitor', () => {
           type: 'email',
           host: 'smtp.test.com',
           port: 587,
+        }),
+      );
+      expect(DiscordProvider).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'discord',
+          webhookUrl: 'https://discord.webhook.url',
+          username: 'Test Bot',
+          avatarUrl: 'https://test.avatar.url',
         }),
       );
     });
@@ -305,6 +342,154 @@ describe('SystemMonitor', () => {
           requestCount: 1000,
         },
       });
+    });
+  });
+
+  describe('Monitor Start and Schedule', () => {
+    it('should schedule metrics collection on start', () => {
+      const config: MonitorConfig = {
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
+      };
+
+      const monitor = new SystemMonitor(config);
+      monitor.start();
+
+      expect(schedule).toHaveBeenCalledWith('*/5 * * * *', expect.any(Function));
+    });
+
+    it('should handle errors during metrics collection in scheduled execution', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      (getDiskInfo as jest.Mock).mockRejectedValue(new Error('Disk info error'));
+
+      const config: MonitorConfig = {
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
+      };
+
+      const monitor = new SystemMonitor(config);
+      monitor.start();
+
+      // Pegue o callback diretamente da chamada do schedule
+      const callback = (schedule as jest.Mock).mock.calls[0][1];
+      await callback();
+
+      expect(consoleSpy).toHaveBeenCalledWith('Monitor error:', expect.any(Error));
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Provider Notifications', () => {
+    it('should handle failed notifications gracefully', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      mockTelegramProvider.send.mockRejectedValueOnce(new Error('Send failed'));
+
+      const config: MonitorConfig = {
+        interval: '*/5 * * * *',
+        providers: [
+          { type: 'telegram', botToken: 'token', chatId: 'chat' },
+          {
+            type: 'email',
+            host: 'smtp.test.com',
+            port: 587,
+            secure: true,
+            auth: { user: 'test', pass: 'pass' },
+            from: 'from@test.com',
+            to: ['to@test.com'],
+          },
+        ],
+        notifications: {
+          cpu: {
+            value: 1,
+            notify: true,
+          },
+        },
+      };
+
+      const monitor = new SystemMonitor(config);
+      await monitor['collectSystemMetrics']();
+
+      // Ajuste a verificação para a mensagem completa
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to send notification: Send failed');
+      expect(mockEmailProvider.send).toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
+  });
+
+  describe('Threshold Checks', () => {
+    it('should handle multiple thresholds being exceeded', async () => {
+      const config: MonitorConfig = {
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
+        notifications: {
+          cpu: {
+            value: 1,
+            notify: true,
+          },
+          memory: {
+            value: 40, // Memory usage is mocked at 50%
+            notify: true,
+          },
+          disk: {
+            value: 40, // Disk usage is mocked at 50%
+            notify: true,
+          },
+        },
+      };
+
+      const monitor = new SystemMonitor(config);
+      const report = await monitor['collectSystemMetrics']();
+
+      expect(report.status).toBe('unhealthy');
+      expect(report.errors).toHaveLength(3);
+      expect(mockTelegramProvider.send).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not notify when notify flag is false', async () => {
+      const config: MonitorConfig = {
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
+        notifications: {
+          cpu: {
+            value: 1,
+            notify: false,
+          },
+        },
+      };
+
+      const monitor = new SystemMonitor(config);
+      const report = await monitor['collectSystemMetrics']();
+
+      expect(report.errors).toHaveLength(0);
+      expect(mockTelegramProvider.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Monitor Configuration', () => {
+    it('should handle empty providers array', () => {
+      const config: MonitorConfig = {
+        interval: '*/5 * * * *',
+        providers: [],
+      };
+
+      const monitor = new SystemMonitor(config);
+      expect(() => monitor.start()).not.toThrow();
+    });
+
+    it('should handle missing notifications config', async () => {
+      const config: MonitorConfig = {
+        interval: '*/5 * * * *',
+        providers: [{ type: 'telegram', botToken: 'token', chatId: 'chat' }],
+      };
+
+      const monitor = new SystemMonitor(config);
+      const report = await monitor['collectSystemMetrics']();
+
+      expect(report.status).toBe('healthy');
+      expect(report.errors).toHaveLength(0);
+      expect(mockTelegramProvider.send).not.toHaveBeenCalled();
     });
   });
 });

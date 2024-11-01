@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import { DiscordConfig, MetricsReport, NotificationProvider } from '../types';
+import { ApplicationConfig, DiscordConfig, MetricsReport, NotificationProvider } from '../types';
 
 export class DiscordProvider implements NotificationProvider {
   private config: DiscordConfig;
@@ -31,7 +31,10 @@ export class DiscordProvider implements NotificationProvider {
     return `${value.toFixed(2)} ${units[unitIndex]}`;
   }
 
-  private formatMessage(report: MetricsReport): {
+  private formatMessage(
+    report: MetricsReport,
+    application?: ApplicationConfig,
+  ): {
     username: string;
     avatar_url?: string;
     embeds: Array<{
@@ -43,7 +46,8 @@ export class DiscordProvider implements NotificationProvider {
       footer: { text: string };
     }>;
   } {
-    const { system, application, status, timestamp, errors } = report;
+    const { system, application: metrics, status, timestamp, errors } = report;
+    const appName = application?.name || 'Watchdock';
 
     const fields = [
       {
@@ -75,7 +79,19 @@ export class DiscordProvider implements NotificationProvider {
       },
     ];
 
-    const hasApplicationMetrics = Object.values(application).some(
+    if (report.application?.['metadata']) {
+      const metadataStr = Object.entries(report.application['metadata'])
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+
+      fields.push({
+        name: '📌 Application Info',
+        value: metadataStr,
+        inline: false,
+      });
+    }
+
+    const hasApplicationMetrics = Object.values(metrics).some(
       (value) => value !== null && value !== undefined && value !== 'N/A',
     );
 
@@ -83,13 +99,11 @@ export class DiscordProvider implements NotificationProvider {
       fields.push({
         name: '📊 Application Metrics',
         value: [
-          application.activeConnections
-            ? `Active Connections: ${application.activeConnections}`
-            : null,
-          application.requestCount ? `Request Count: ${application.requestCount}` : null,
-          application.errorCount ? `Error Count: ${application.errorCount}` : null,
-          application.averageResponseTime
-            ? `Avg Response Time: ${application.averageResponseTime}ms`
+          metrics.activeConnections ? `Active Connections: ${metrics.activeConnections}` : null,
+          metrics.requestCount ? `Request Count: ${metrics.requestCount}` : null,
+          metrics.errorCount ? `Error Count: ${metrics.errorCount}` : null,
+          metrics.averageResponseTime
+            ? `Avg Response Time: ${metrics.averageResponseTime}ms`
             : null,
         ]
           .filter(Boolean)
@@ -111,7 +125,7 @@ export class DiscordProvider implements NotificationProvider {
       avatar_url: this.config.avatarUrl || '',
       embeds: [
         {
-          title: '🔍 System Health Report',
+          title: `🔍 System Health Report: ${appName}`,
           color: this.getStatusColor(status),
           description: `**Status:** ${status.toUpperCase()}`,
           timestamp: timestamp,
@@ -126,9 +140,9 @@ export class DiscordProvider implements NotificationProvider {
     };
   }
 
-  async send(report: MetricsReport): Promise<void> {
+  async send(report: MetricsReport, application?: ApplicationConfig): Promise<void> {
     try {
-      const message = this.formatMessage(report);
+      const message = this.formatMessage(report, application);
       await axios.post(this.config.webhookUrl, message);
     } catch (error) {
       if (error instanceof AxiosError) {
