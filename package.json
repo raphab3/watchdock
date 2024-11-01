@@ -1,6 +1,6 @@
 {
   "name": "watchdock",
-  "version": "1.7.517",
+  "version": "1.7.518",
   "description": "Comprehensive system monitoring library with multiple notification providers (Discord, Telegram, Email)",
   "author": "Rafael Batista Santos <raphab33@gmail.com>",
   "license": "MIT",
