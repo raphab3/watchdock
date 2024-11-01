@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "outDir": "./dist", // Diretório de saída
+    "rootDir": "./src", // Diretório raiz dos arquivos fonte
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"], // Inclui todos os arquivos dentro de src
+  "exclude": ["node_modules", "dist"]
+}

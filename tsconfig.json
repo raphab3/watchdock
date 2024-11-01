@@ -27,6 +27,6 @@
     "noPropertyAccessFromIndexSignature": true,
     "types": ["node", "jest"]
   },
-  "include": ["src", "index.ts"],
+  "include": ["src", "index.ts", "implementation", "app"],
   "exclude": ["node_modules", "dist", "test"]
 }
