@@ -54,14 +54,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          registry-url: https://registry.npmjs.org/
-          cache: 'npm'
-          cache-dependency-path: '**/package.json'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Git configuration
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
+          git remote set-url origin https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ github.repository }}.git
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+      - name: Verify NPM Authentication
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN_WATCHDOCK }}" > ~/.npmrc
+          npm whoami
+          echo "Authenticated as $(npm whoami)"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Install dependencies
         run: npm ci
@@ -69,26 +78,19 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Configure Git URL
-        run: |
-          git remote set-url origin https://x-access-token:${DEPLOY_TOKEN}@github.com/${{ github.repository }}.git
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-
-      - name: Auto-increment version
+      - name: Auto-increment version and publish
         run: |
           git pull origin main
           npm version patch -m "🚀 Release %s [skip ci]"
+          git push origin HEAD:main --follow-tags
+          echo "Publishing version $(node -p "require('./package.json').version")"
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
-
-      - name: Push changes
-        run: |
-          git push origin HEAD:main --follow-tags
-        env:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
-      - name: Publish to NPM
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
+      - name: Print completion message
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "✅ Successfully published version $VERSION to npm"
+          echo "🔗 Package URL: https://www.npmjs.com/package/watchdock/v/$VERSION"

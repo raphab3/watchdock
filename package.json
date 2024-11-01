@@ -6,15 +6,7 @@
   "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/raphab3/watchdock.git"
-  },
-  "bugs": {
-    "url": "https://github.com/raphab3/watchdock/issues"
-  },
-  "homepage": "https://github.com/raphab3/watchdock#readme",
-  "scripts": {
+    "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest --config jest.config.js",
     "test:coverage": "jest --config jest.config.js --coverage",
@@ -77,6 +69,14 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raphab3/watchdock.git"
+  },
+  "bugs": {
+    "url": "https://github.com/raphab3/watchdock/issues"
+  },
+  "homepage": "https://github.com/raphab3/watchdock#readme",
   "keywords": [
     "monitoring",
     "system-monitor",
