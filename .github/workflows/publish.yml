@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'package.json'
+      - 'package-lock.json'
 
 permissions:
   contents: write
@@ -46,6 +49,7 @@ jobs:
         run: npm run build
 
       - name: Version and Push
+        if: github.event_name == 'release'
         run: |
           git pull origin main
           npm version patch -m "🚀 Release %s"
@@ -54,20 +58,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
 
       - name: Setup NPM Authentication
+        if: github.event_name == 'release'
         run: |
-          # Configurar autenticação NPM temporariamente
           npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN_WATCHDOCK}
         env:
           NPM_TOKEN_WATCHDOCK: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Publish to NPM
+        if: github.event_name == 'release'
         run: |
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_WATCHDOCK }}
 
       - name: Print completion message
-        if: success()
+        if: success() && github.event_name == 'release'
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "✅ Successfully published version $VERSION to npm"
